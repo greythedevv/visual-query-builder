@@ -1,0 +1,17 @@
+export const productsData = [
+  { id: 'P-001', name: 'Wireless Earbuds',   category: 'electronics', price: 79.99,  inventory: 142, inStock: true  },
+  { id: 'P-002', name: 'Running Shoes',       category: 'sports',      price: 120.00, inventory: 58,  inStock: true  },
+  { id: 'P-003', name: 'Coffee Maker',        category: 'kitchen',     price: 49.99,  inventory: 0,   inStock: false },
+  { id: 'P-004', name: 'Yoga Mat',            category: 'sports',      price: 35.00,  inventory: 230, inStock: true  },
+  { id: 'P-005', name: 'Laptop Stand',        category: 'electronics', price: 29.99,  inventory: 87,  inStock: true  },
+  { id: 'P-006', name: 'Blender',             category: 'kitchen',     price: 65.00,  inventory: 12,  inStock: true  },
+  { id: 'P-007', name: 'Mechanical Keyboard', category: 'electronics', price: 149.99, inventory: 0,   inStock: false },
+  { id: 'P-008', name: 'Water Bottle',        category: 'sports',      price: 24.99,  inventory: 315, inStock: true  },
+  { id: 'P-009', name: 'Air Fryer',           category: 'kitchen',     price: 89.99,  inventory: 44,  inStock: true  },
+  { id: 'P-010', name: 'Monitor',             category: 'electronics', price: 320.00, inventory: 23,  inStock: true  },
+  { id: 'P-011', name: 'Resistance Bands',    category: 'sports',      price: 18.00,  inventory: 500, inStock: true  },
+  { id: 'P-012', name: 'Toaster',             category: 'kitchen',     price: 39.99,  inventory: 0,   inStock: false },
+  { id: 'P-013', name: 'USB Hub',             category: 'electronics', price: 22.99,  inventory: 156, inStock: true  },
+  { id: 'P-014', name: 'Dumbbell Set',        category: 'sports',      price: 199.99, inventory: 8,   inStock: true  },
+  { id: 'P-015', name: 'Rice Cooker',         category: 'kitchen',     price: 55.00,  inventory: 31,  inStock: true  },
+]
