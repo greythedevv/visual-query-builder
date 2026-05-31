@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useQueryStore } from '@/app/store/queryStore'
-import { Bookmark, Trash2, Download } from 'lucide-react'
+import { Bookmark, Download } from 'lucide-react'
 
 export function SavedPresets() {
   const { presets, savePreset, loadPreset } = useQueryStore()

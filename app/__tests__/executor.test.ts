@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { it, expect } from 'vitest'
 import { executeQuery } from '@/app/lib/queryEngine/executor'
 import { QueryGroup } from '@/app/lib/queryEngine/types'
 
