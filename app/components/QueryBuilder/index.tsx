@@ -13,10 +13,34 @@ import { useQueryStore } from '@/app/store/queryStore'
 import { SchemaSelector } from './SchemaSelector'
 import { ConditionGroup } from './ConditionGroup'
 import { AlertCircle } from 'lucide-react'
-import { QueryGroup } from '@/app/lib/queryEngine/types'
+import { QueryGroup, QueryNode } from '@/app/lib/queryEngine/types'
 
 interface Props {
   errors: { nodeId: string; message: string }[]
+}
+
+// Returns the group that directly contains nodeId, plus the over-item's parent
+function findParentGroup(group: QueryGroup, nodeId: string): QueryGroup | null {
+  for (const child of group.children) {
+    if (child.id === nodeId) return group
+    if (child.type === 'group') {
+      const found = findParentGroup(child, nodeId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+// Finds the node by id anywhere in the tree
+function findNode(group: QueryGroup, nodeId: string): QueryNode | null {
+  for (const child of group.children) {
+    if (child.id === nodeId) return child
+    if (child.type === 'group') {
+      const found = findNode(child, nodeId)
+      if (found) return found
+    }
+  }
+  return null
 }
 
 export function QueryBuilder({ errors }: Props) {
@@ -27,39 +51,26 @@ export function QueryBuilder({ errors }: Props) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
- function handleDragEnd(event: DragEndEvent) {
-  const { active, over } = event
-  if (!over || active.id === over.id) return
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
 
-  // Find which group contains the dragged item
-  function findParentGroup(
-    group: QueryGroup,
-    nodeId: string
-  ): QueryGroup | null {
-    for (const child of group.children) {
-      if (child.id === nodeId) return group
-      if (child.type === 'group') {
-        const found = findParentGroup(child, nodeId)
-        if (found) return found
-      }
+    const activeParent = findParentGroup(rootGroup, String(active.id))
+    const overParent   = findParentGroup(rootGroup, String(over.id))
+
+    if (!activeParent || !overParent) return
+
+    if (activeParent.id === overParent.id) {
+      // Same group — simple reorder
+      const newIndex = overParent.children.findIndex(c => c.id === over.id)
+      if (newIndex === -1) return
+      moveNode(String(active.id), activeParent.id, newIndex)
+    } else {
+      // Cross-group move: insert after the over item in its parent
+      const newIndex = overParent.children.findIndex(c => c.id === over.id)
+      moveNode(String(active.id), overParent.id, newIndex === -1 ? overParent.children.length : newIndex)
     }
-    return null
   }
-
-  const activeParent = findParentGroup(rootGroup, String(active.id))
-  const overParent   = findParentGroup(rootGroup, String(over.id))
-
-  
-  if (!activeParent || !overParent) return
-  if (activeParent.id !== overParent.id) return
-
-  const oldIndex = activeParent.children.findIndex(c => c.id === active.id)
-  const newIndex = activeParent.children.findIndex(c => c.id === over.id)
-
-  if (oldIndex === -1 || newIndex === -1) return
-
-  moveNode(String(active.id), activeParent.id, newIndex)
-}
 
   return (
     <div className="flex flex-col h-full">
@@ -98,6 +109,7 @@ export function QueryBuilder({ errors }: Props) {
               group={rootGroup}
               depth={0}
               isRoot
+              errorNodeIds={new Set(errors.map(e => e.nodeId))}
             />
           </DndContext>
         </div>
