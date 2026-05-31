@@ -40,6 +40,13 @@ describe('validateTree', () => {
     expect(validateTree(tree, schema)).toHaveLength(0)
   })
 
+  it('does not require value for is_not_null', () => {
+    const tree = group([
+      { id: 'r1', type: 'rule', field: 'name', operator: 'is_not_null', value: null }
+    ])
+    expect(validateTree(tree, schema)).toHaveLength(0)
+  })
+
   it('catches operator incompatible with field type', () => {
     // "contains" is not valid for number field "age"
     const tree = group([
