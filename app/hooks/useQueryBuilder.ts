@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useQueryStore } from '@/app/store/queryStore'
 import { buildSQL, buildMongo } from '@/app/lib/queryEngine/builders'
 import { executeQuery } from '@/app/lib/queryEngine/executor'
@@ -7,27 +7,24 @@ import { MOCK_DATA } from '@/app/lib/mockData/index'
 import { validateImport } from '@/app/lib/queryEngine/importValidator'
 
 export function useQueryBuilder() {
-  const {
-    schema, rootGroup, saveToHistory, importTree,
-  } = useQueryStore()
+  const { schema, rootGroup, saveToHistory, importTree } = useQueryStore()
 
-  const [results, setResults] = useState<Record<string, unknown>[]>([])
-  const [isExecuting, setIsExecuting] = useState(false)
+  const [results,       setResults]       = useState<Record<string, unknown>[]>([])
+  const [isExecuting,   setIsExecuting]   = useState(false)
   const [executionTime, setExecutionTime] = useState<number | null>(null)
-  const [hasExecuted, setHasExecuted] = useState(false)
-  const [importError, setImportError] = useState<string | null>(null)
+  const [hasExecuted,   setHasExecuted]   = useState(false)
+  const [importError,   setImportError]   = useState<string | null>(null)
 
-  const sql   = schema ? buildSQL(rootGroup, schema.id)   : ''
-  const mongo = schema ? buildMongo(rootGroup)             : ''
-  const errors = schema ? validateTree(rootGroup, schema)  : []
+  const sql    = useMemo(() => schema ? buildSQL(rootGroup, schema.id)  : '', [schema, rootGroup])
+  const mongo  = useMemo(() => schema ? buildMongo(rootGroup)            : '', [schema, rootGroup])
+  const errors = useMemo(() => schema ? validateTree(rootGroup, schema)  : [], [schema, rootGroup])
 
   const execute = useCallback(async () => {
     if (!schema || errors.length > 0) return
     setIsExecuting(true)
     const start = performance.now()
-    // Simulate async query
     await new Promise(r => setTimeout(r, 300))
-    const data = MOCK_DATA[schema.id] ?? []
+    const data    = MOCK_DATA[schema.id] ?? []
     const matched = executeQuery(data, rootGroup)
     const elapsed = performance.now() - start
     setResults(matched)
@@ -53,7 +50,7 @@ export function useQueryBuilder() {
     const reader = new FileReader()
     reader.onload = (e) => {
       try {
-        const raw = JSON.parse(e.target?.result as string)
+        const raw  = JSON.parse(e.target?.result as string)
         const tree = validateImport(raw)
         importTree(tree)
       } catch (err) {
