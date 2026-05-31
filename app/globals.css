@@ -1,8 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import "tailwindcss";
 
 :root {
   --color-violet: #7c3aed;
@@ -15,7 +13,13 @@
 }
 
 body {
-  @apply bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+  background-color: #fafafa;
+  color: #18181b;
+}
+
+.dark body {
+  background-color: #09090b;
+  color: #f4f4f5;
 }
 
 /* Custom scrollbar */
@@ -24,23 +28,30 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-transparent;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-zinc-300 dark:bg-zinc-700 rounded-full;
+  background: #d4d4d8;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-zinc-400 dark:bg-zinc-600;
+  background: #a1a1aa;
 }
 
-/* Smooth transitions for theme changes */
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Smooth transitions */
 * {
   transition-property: background-color, border-color;
   transition-duration: 150ms;
   transition-timing-function: ease;
 }
 
-/* Override transition for interactive elements */
 button, input, select {
   transition-property: all;
   transition-duration: 150ms;
