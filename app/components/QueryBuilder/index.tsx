@@ -13,6 +13,7 @@ import { useQueryStore } from '@/app/store/queryStore'
 import { SchemaSelector } from './SchemaSelector'
 import { ConditionGroup } from './ConditionGroup'
 import { AlertCircle } from 'lucide-react'
+import { QueryGroup } from '@/app/lib/queryEngine/types'
 
 interface Props {
   errors: { nodeId: string; message: string }[]
@@ -26,11 +27,39 @@ export function QueryBuilder({ errors }: Props) {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    moveNode(String(active.id), rootGroup.id, 0)
+ function handleDragEnd(event: DragEndEvent) {
+  const { active, over } = event
+  if (!over || active.id === over.id) return
+
+  // Find which group contains the dragged item
+  function findParentGroup(
+    group: QueryGroup,
+    nodeId: string
+  ): QueryGroup | null {
+    for (const child of group.children) {
+      if (child.id === nodeId) return group
+      if (child.type === 'group') {
+        const found = findParentGroup(child, nodeId)
+        if (found) return found
+      }
+    }
+    return null
   }
+
+  const activeParent = findParentGroup(rootGroup, String(active.id))
+  const overParent   = findParentGroup(rootGroup, String(over.id))
+
+  
+  if (!activeParent || !overParent) return
+  if (activeParent.id !== overParent.id) return
+
+  const oldIndex = activeParent.children.findIndex(c => c.id === active.id)
+  const newIndex = activeParent.children.findIndex(c => c.id === over.id)
+
+  if (oldIndex === -1 || newIndex === -1) return
+
+  moveNode(String(active.id), activeParent.id, newIndex)
+}
 
   return (
     <div className="flex flex-col h-full">
