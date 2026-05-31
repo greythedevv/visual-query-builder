@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { SyntaxHighlight } from './SyntaxHighlight'
+import { useQueryStore } from '@/app/store/queryStore'
 import { Copy, Check } from 'lucide-react'
 
 interface Props {
@@ -18,9 +19,11 @@ const TABS: { id: Tab; label: string }[] = [
 
 export function QueryPreview({ sql, mongo }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('sql')
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied]       = useState(false)
+  const { rootGroup }             = useQueryStore()
 
-  const content = activeTab === 'sql' ? sql : activeTab === 'mongo' ? mongo : ''
+  const jsonContent = JSON.stringify(rootGroup, null, 2)
+  const content = activeTab === 'sql' ? sql : activeTab === 'mongo' ? mongo : jsonContent
 
   async function copy() {
     await navigator.clipboard.writeText(content)
@@ -72,7 +75,7 @@ export function QueryPreview({ sql, mongo }: Props) {
           <SyntaxHighlight code={mongo || '{}'} language="json" />
         )}
         {activeTab === 'json' && (
-          <SyntaxHighlight code="Use Export button to get full JSON tree" language="json" />
+          <SyntaxHighlight code={jsonContent} language="json" />
         )}
       </div>
     </div>
