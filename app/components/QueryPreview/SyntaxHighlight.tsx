@@ -43,7 +43,11 @@ function tokenizeSQL(code: string): SQLToken[] {
 
     if (code[i] === "'") {
       let j = i + 1
-      while (j < code.length && !(code[j] === "'" && code[j - 1] !== '\\')) j++
+      while (j < code.length) {
+        if (code[j] === "'" && code[j + 1] === "'") { j += 2; continue }
+        if (code[j] === "'") break
+        j++
+      } while (j < code.length && !(code[j] === "'" && code[j - 1] !== '\\')) j++
       tokens.push({ kind: 'string', text: code.slice(i, j + 1) })
       i = j + 1; continue
     }
@@ -86,11 +90,13 @@ function tokenizeJSON(code: string): JSONToken[] {
   const tokens: JSONToken[] = []
   let i = 0
   while (i < code.length) {
-    if (code[i] === '\n') { tokens.push({ kind: 'newline' }); i++; continue }
-
     if (code[i] === '"') {
       let j = i + 1
-      while (j < code.length && !(code[j] === '"' && code[j - 1] !== '\\')) j++
+      while (j < code.length) {
+        if (code[j] === '\\') { j += 2; continue }
+        if (code[j] === '"') break
+        j++
+      }
       const raw = code.slice(i, j + 1)
       let k = j + 1
       while (k < code.length && /[ \t]/.test(code[k])) k++

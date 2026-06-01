@@ -86,7 +86,7 @@ export function SavedPresets() {
               <button
                 onClick={() => deletePreset(preset.id)}
                 aria-label="Delete preset"
-                className="px-3 py-3 text-[var(--color-ink-3)] hover:text-[var(--color-bad)] hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                className="px-3 py-3 text-[var(--color-ink-3)] hover:text-[var(--color-bad)] hover:bg-red-500/10 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100"
               >
                 <Trash2 size={11} />
               </button>

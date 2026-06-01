@@ -83,7 +83,7 @@ describe('RuleRow', () => {
 
   it('calls removeNode when delete button clicked', () => {
     render(<RuleRow rule={makeRule()} />)
-    fireEvent.click(screen.getByLabelText('Remove rule'))
+    fireEvent.click(screen.getByLabelText('Delete rule'))
     expect(mockStore.removeNode).toHaveBeenCalledWith('r1')
   })
 
@@ -119,8 +119,7 @@ describe('RuleRow', () => {
 
   it('applies error border when hasError is true', () => {
     const { container } = render(<RuleRow rule={makeRule()} hasError />)
-    expect(container.firstChild?.toString()).toBeTruthy()
-    // Check that error class is in the DOM
-    expect(container.innerHTML).toContain('border-red')
+    // Error state uses the design-system token, not a literal red class
+    expect(container.innerHTML).toContain('var(--color-bad)')
   })
 })

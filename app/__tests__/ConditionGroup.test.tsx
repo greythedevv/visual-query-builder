@@ -79,7 +79,7 @@ describe('ConditionGroup', () => {
 
   it('shows empty state message when no children', () => {
     render(<ConditionGroup group={group()} depth={0} isRoot />)
-    expect(screen.getByText(/empty group/i)).toBeTruthy()
+    expect(screen.getByTestId('empty-group')).toBeTruthy()
   })
 
   it('hides children when collapsed', () => {

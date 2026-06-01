@@ -18,7 +18,7 @@ export default function Home() {
   const { theme, setTheme }           = useTheme()
   const { schema, reset }             = useQueryStore()
   const [sidebarTab, setSidebarTab]   = useState<SidebarTab>('history')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mobileTab, setMobileTab]     = useState<MobileTab>('builder')
   const fileInputRef                  = useRef<HTMLInputElement>(null)
 
@@ -62,7 +62,7 @@ export default function Home() {
           </span>
           {/* Schema badge — desktop only */}
           {schema && (
-            <span className="sm:inline-flex items-center text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-ring)]">
+              <span className="hidden sm:inline-flex items-center text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-ring)]">
               {schema.name}
             </span>
           )}

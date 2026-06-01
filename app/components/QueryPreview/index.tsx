@@ -22,13 +22,17 @@ export function QueryPreview({ sql, mongo }: { sql: string; mongo: string }) {
   const lang        = activeTab === 'sql' ? 'sql' : 'json'
   const activeFile  = TABS.find(t => t.id === activeTab)!.filename
   const isEmpty     = !sql && !mongo
-
-  async function copy() {
-    await navigator.clipboard.writeText(content)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  
+ async function copy() {
+   try {
+      await navigator.clipboard.writeText(content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard access denied or unavailable
+    }
   }
-
+  
   return (
     <div className="flex flex-col h-full bg-[var(--color-surface-0)]">
 

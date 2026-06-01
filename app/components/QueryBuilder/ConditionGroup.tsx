@@ -78,7 +78,7 @@ export const ConditionGroup = memo(({
           </SortableContext>
 
           {group.children.length === 0 && (
-            <div className="flex items-center justify-center py-8 rounded-lg border border-dashed border-[var(--color-border-strong)]">
+            <div data-testid="empty-group" className="flex items-center justify-center  py-8 rounded-lg border border-dashed border-[var(--color-border-strong)]">
               <p className="text-xs text-[var(--color-ink-3)]">
                 Click <span className="text-[var(--color-accent)] font-semibold">+ Rule</span> to add a condition
               </p>

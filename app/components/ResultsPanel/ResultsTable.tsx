@@ -20,7 +20,9 @@ export function ResultsTable({ data }: { data: Record<string, unknown>[] }) {
 
   const sorted = sortKey
     ? [...data].sort((a, b) => {
-        const cmp = String(a[sortKey]) < String(b[sortKey]) ? -1 : 1
+         const aVal = String(a[sortKey])
+        const bVal = String(b[sortKey])
+        const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
         return sortDir === 'asc' ? cmp : -cmp
       })
     : data
