@@ -1,7 +1,7 @@
 'use client'
 import { QueryGroup } from '@/app/lib/queryEngine/types'
 import { useQueryStore } from '@/app/store/queryStore'
-import { ChevronDown, ChevronRight, Plus, PlusSquare, Trash2, GripVertical } from 'lucide-react'
+import { ChevronDown, ChevronRight, Plus, Layers, Trash2, GripVertical } from 'lucide-react'
 
 interface Props {
   group: QueryGroup
@@ -11,72 +11,81 @@ interface Props {
 
 export function GroupHeader({ group, isRoot, dragHandleProps }: Props) {
   const { addRule, addGroup, removeNode, toggleLogic, toggleCollapse } = useQueryStore()
+  const isAnd = group.logic === 'AND'
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-2 w-full">
+
+      {/* Drag handle (non-root only) */}
       {!isRoot && (
         <button
           {...dragHandleProps}
-          className="text-zinc-300 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing"
           aria-label="Drag to reorder group"
+          className="text-[var(--color-ink-3)] hover:text-[var(--color-ink-2)] cursor-grab active:cursor-grabbing transition-colors p-0.5 shrink-0"
         >
-          <GripVertical size={14} />
+          <GripVertical size={13} />
         </button>
       )}
 
+      {/* Collapse toggle */}
       <button
         onClick={() => toggleCollapse(group.id)}
-        className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
         aria-label={group.collapsed ? 'Expand group' : 'Collapse group'}
+        className="text-[var(--color-ink-3)] hover:text-[var(--color-ink-1)] transition-colors p-0.5 shrink-0"
       >
-        {group.collapsed
-          ? <ChevronRight size={16} />
-          : <ChevronDown size={16} />
-        }
+        {group.collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
       </button>
 
+      {/* AND / OR pill */}
       <button
         onClick={() => toggleLogic(group.id)}
-        className={`px-3 py-1 rounded-md text-xs font-mono font-bold tracking-wider transition-all ${
-          group.logic === 'AND'
-            ? 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/60'
-            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60'
-        }`}
-        aria-label={`Logic operator: ${group.logic}. Click to toggle.`}
+        aria-label={`Logic: ${group.logic}. Click to toggle.`}
+        className={[
+          'px-2.5 py-1 rounded-md text-[10px] font-mono font-bold tracking-widest transition-all border shrink-0',
+          isAnd
+            ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[var(--color-accent-ring)]'
+            : 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+        ].join(' ')}
       >
         {group.logic}
       </button>
 
-      <span className="text-xs text-zinc-400 dark:text-zinc-500">
-        {group.children.length} condition{group.children.length !== 1 ? 's' : ''}
+      {/* Condition count */}
+      <span className="text-[10px] font-mono text-[var(--color-ink-3)] shrink-0">
+        {group.children.length} cond{group.children.length !== 1 ? 's' : ''}
       </span>
 
-      <div className="ml-auto flex items-center gap-1">
+      {/* Actions */}
+      <div className="ml-auto flex items-center gap-0.5 shrink-0">
+        {/* + Rule */}
         <button
           onClick={() => addRule(group.id)}
-          className="flex items-center gap-1 text-xs px-2 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
           aria-label="Add condition rule"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium text-[var(--color-ink-3)] hover:text-[var(--color-ink-1)] hover:bg-[var(--color-surface-3)] border border-transparent hover:border-[var(--color-border-base)] transition-all"
         >
-          <Plus size={12} />
+          <Plus size={11} />
           <span className="hidden sm:inline">Rule</span>
         </button>
 
+        {/* + Group — Layers icon is much clearer for "nested group" */}
         <button
           onClick={() => addGroup(group.id)}
-          className="flex items-center gap-1 text-xs px-2 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
           aria-label="Add nested group"
+          title="Add nested condition group"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium text-[var(--color-ink-3)] hover:text-[var(--color-ink-1)] hover:bg-[var(--color-surface-3)] border border-transparent hover:border-[var(--color-border-base)] transition-all"
         >
-          <PlusSquare size={12} />
+          <Layers size={11} />
           <span className="hidden sm:inline">Group</span>
         </button>
 
+        {/* Delete group */}
         {!isRoot && (
           <button
             onClick={() => removeNode(group.id)}
-            className="text-xs px-2 py-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-zinc-400 hover:text-red-500 transition-colors"
             aria-label="Remove group"
+            className="p-1.5 rounded-md text-[var(--color-ink-3)] hover:text-[var(--color-bad)] hover:bg-red-500/10 transition-all"
           >
-            <Trash2 size={12} />
+            <Trash2 size={11} />
           </button>
         )}
       </div>

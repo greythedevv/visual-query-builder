@@ -1,6 +1,6 @@
 'use client'
 import { ResultsTable } from './ResultsTable'
-import { Play, Loader2, SearchX, Clock } from 'lucide-react'
+import { Play, Loader2, SearchX, Clock, Zap } from 'lucide-react'
 
 interface Props {
   results: Record<string, unknown>[]
@@ -16,19 +16,30 @@ export function ResultsPanel({
   results, isExecuting, executionTime,
   hasExecuted, hasErrors, hasSchema, onExecute,
 }: Props) {
+  const canRun = !isExecuting && !hasErrors && hasSchema
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+    <div className="flex flex-col h-full bg-[var(--color-surface-1)]">
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--color-border-base)] shrink-0">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Results</span>
+          <span className="text-[10px] font-semibold tracking-widest uppercase text-[var(--color-ink-3)]">
+            Results
+          </span>
           {hasExecuted && !isExecuting && (
-            <span className="px-2 py-0.5 rounded-full text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium">
+            <span className={[
+              'text-[10px] font-mono px-2 py-0.5 rounded-full border',
+              results.length > 0
+                ? 'bg-emerald-500/10 text-[var(--color-ok)] border-emerald-500/20'
+                : 'bg-[var(--color-surface-3)] text-[var(--color-ink-3)] border-[var(--color-border-base)]',
+            ].join(' ')}>
               {results.length} row{results.length !== 1 ? 's' : ''}
             </span>
           )}
           {executionTime !== null && (
-            <span className="flex items-center gap-1 text-xs text-zinc-400">
-              <Clock size={10} />
+            <span className="flex items-center gap-1 text-[10px] font-mono text-[var(--color-ink-3)]">
+              <Clock size={9} />
               {executionTime}ms
             </span>
           )}
@@ -36,56 +47,57 @@ export function ResultsPanel({
 
         <button
           onClick={onExecute}
-          disabled={isExecuting || hasErrors || !hasSchema}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            hasErrors || !hasSchema
-              ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'
-              : 'bg-violet-600 hover:bg-violet-700 text-white shadow-sm hover:shadow-md active:scale-95'
-          }`}
-          aria-label="Execute query (Ctrl+Enter)"
+          disabled={!canRun}
+          className={[
+            'flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all',
+            canRun
+              ? 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white shadow-sm'
+              : 'bg-[var(--color-surface-3)] text-[var(--color-ink-3)] cursor-not-allowed opacity-60',
+          ].join(' ')}
         >
           {isExecuting
-            ? <Loader2 size={14} className="animate-spin" />
-            : <Play size={14} />
-          }
-          {isExecuting ? 'Running...' : 'Run Query'}
+            ? <Loader2 size={11} className="animate-spin" />
+            : <Play size={11} />}
+          {isExecuting ? 'Running…' : 'Run Query'}
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
-        {!hasSchema && (
-          <div className="flex flex-col items-center justify-center h-32 text-sm text-zinc-400">
-            Select a data source to run queries
-          </div>
-        )}
-
+      {/* Body */}
+      <div className="flex-1 overflow-auto p-5">
+        {!hasSchema && <Empty text="Select a data source to run queries" />}
         {hasSchema && !hasExecuted && !isExecuting && (
-          <div className="flex flex-col items-center justify-center h-32 text-center">
-            <p className="text-sm text-zinc-400">
-              Click <span className="font-medium text-violet-500">Run Query</span> or press{' '}
-              <kbd className="px-1.5 py-0.5 rounded text-xs bg-zinc-100 dark:bg-zinc-800 font-mono">Ctrl+Enter</kbd>
-            </p>
-          </div>
+          <Empty
+            icon={<Zap size={18} className="opacity-20" />}
+            text={
+              <>
+                press{' '}
+                <kbd className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-[var(--color-surface-3)] border border-[var(--color-border-strong)]">
+                  Ctrl+Enter
+                </kbd>
+                {' '}to run
+              </>
+            }
+          />
         )}
-
         {isExecuting && (
-          <div className="flex items-center justify-center h-32 gap-2 text-sm text-zinc-400">
-            <Loader2 size={16} className="animate-spin" />
-            Executing query...
-          </div>
+          <Empty icon={<Loader2 size={18} className="animate-spin opacity-30" />} text="Executing query…" />
         )}
-
         {hasExecuted && !isExecuting && results.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-32 gap-2 text-center">
-            <SearchX size={24} className="text-zinc-300 dark:text-zinc-600" />
-            <p className="text-sm text-zinc-400">No records match your query</p>
-          </div>
+          <Empty icon={<SearchX size={18} className="opacity-25" />} text="No records match your query" />
         )}
-
         {hasExecuted && !isExecuting && results.length > 0 && (
           <ResultsTable data={results} />
         )}
       </div>
+    </div>
+  )
+}
+
+function Empty({ icon, text }: { icon?: React.ReactNode; text: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center justify-center h-32 gap-2.5 text-center">
+      {icon && <div className="text-[var(--color-ink-3)]">{icon}</div>}
+      <p className="text-[11px] font-mono text-[var(--color-ink-3)]">{text}</p>
     </div>
   )
 }
