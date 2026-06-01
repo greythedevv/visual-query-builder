@@ -2,15 +2,14 @@
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import type { ComponentProps } from 'react'
 
-type ThemeProviderProps = ComponentProps<typeof NextThemesProvider>
-
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+export function ThemeProvider({ children, ...props }: ComponentProps<typeof NextThemesProvider>) {
   return (
     <NextThemesProvider
       attribute="class"
       defaultTheme="dark"
       enableSystem={false}
       disableTransitionOnChange={false}
+      value={{ dark: 'dark', light: 'light' }}
       {...props}
     >
       {children}

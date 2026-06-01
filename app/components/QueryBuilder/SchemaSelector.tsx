@@ -7,26 +7,37 @@ export function SchemaSelector() {
   const { schema, setSchema } = useQueryStore()
 
   return (
-    <div className="flex items-center gap-3 p-4 border-b border-zinc-200 dark:border-zinc-800">
-      <Database size={16} className="text-violet-500 shrink-0" />
-      <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Data source</span>
-      <div className="flex gap-2 ml-2 flex-wrap">
+    <div className="flex items-center gap-3 px-4 py-2.5 shrink-0 border-b border-[var(--color-border-base)] bg-[var(--color-surface-1)]">
+
+      {/* Label — hidden on very small screens */}
+      <div className=" flex items-center gap-2 shrink-0">
+        <Database size={13} className="text-[var(--color-accent)]" />
+        <span className="text-[10px] hidden sm:block font-semibold uppercase tracking-widest text-[var(--color-ink-3)] whitespace-nowrap">
+          Data source
+        </span>
+      </div>
+
+      {/* Schema buttons */}
+      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
         {SCHEMAS.map(s => (
           <button
             key={s.id}
             onClick={() => setSchema(s)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            className={[
+              // Smaller on mobile, normal on sm+
+              'px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-medium transition-all border whitespace-nowrap',
               schema?.id === s.id
-                ? 'bg-violet-600 text-white shadow-sm'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
+                ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+                : 'bg-transparent text-[var(--color-ink-2)] border-[var(--color-border-strong)] hover:border-[var(--color-accent)] hover:text-[var(--color-ink-1)]',
+            ].join(' ')}
           >
             {s.name}
           </button>
         ))}
       </div>
+
       {schema && (
-        <span className="ml-auto text-xs text-zinc-400">
+        <span className="ml-auto text-[10px] font-mono text-[var(--color-ink-3)] shrink-0 ">
           {schema.fields.length} fields
         </span>
       )}

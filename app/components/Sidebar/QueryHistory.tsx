@@ -1,47 +1,54 @@
 'use client'
 import { useQueryStore } from '@/app/store/queryStore'
-import { History, RotateCcw } from 'lucide-react'
+import { RotateCcw }     from 'lucide-react'
 
 export function QueryHistory() {
   const { history, loadFromHistory } = useQueryStore()
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-        <History size={14} className="text-zinc-500" />
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Query History</span>
-        <span className="ml-auto text-xs text-zinc-400">{history.length}/20</span>
+
+      {/* Header strip */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border-base)] shrink-0">
+        <span className="text-[10px] font-semibold tracking-widest uppercase text-[var(--color-ink-3)]">
+          History
+        </span>
+        <span className="text-[10px] font-mono text-[var(--color-ink-3)] bg-[var(--color-surface-3)] px-2 py-0.5 rounded-full border border-[var(--color-border-base)]">
+          {history.length}/20
+        </span>
       </div>
 
+      {/* List */}
       <div className="flex-1 overflow-y-auto">
         {history.length === 0 ? (
-          <div className="flex items-center justify-center h-24 text-xs text-zinc-400">
-            No history yet — run a query to start
+          <div className="flex flex-col items-center justify-center h-28 gap-2">
+            <span className="text-2xl opacity-10">◎</span>
+            <p className="text-[10px] font-mono text-[var(--color-ink-3)] text-center">
+              run a query to see history
+            </p>
           </div>
         ) : (
-          <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {history.map(entry => (
-              <li key={entry.id}>
-                <button
-                  onClick={() => loadFromHistory(entry.id)}
-                  className="w-full text-left px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors group"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="text-xs text-zinc-700 dark:text-zinc-300 line-clamp-2 flex-1">
-                      {entry.label}
-                    </span>
-                    <RotateCcw
-                      size={11}
-                      className="text-zinc-300 group-hover:text-violet-500 transition-colors mt-0.5 shrink-0"
-                    />
-                  </div>
-                  <span className="text-xs text-zinc-400 mt-1 block">
-                    {new Date(entry.timestamp).toLocaleTimeString()}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          history.map((entry, i) => (
+            <button
+              key={entry.id}
+              onClick={() => loadFromHistory(entry.id)}
+              className="w-full text-left px-4 py-3 border-b border-[var(--color-border-soft)] hover:bg-[var(--color-surface-2)] transition-colors group animate-fade-in"
+              style={{ animationDelay: `${i * 30}ms` }}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-[11px] text-[var(--color-ink-1)] line-clamp-2 flex-1 leading-snug">
+                  {entry.label}
+                </span>
+                <RotateCcw
+                  size={9}
+                  className="text-[var(--color-ink-3)] group-hover:text-[var(--color-accent)] transition-colors mt-0.5 shrink-0"
+                />
+              </div>
+              <span className="text-[9px] font-mono text-[var(--color-ink-3)] mt-1 block">
+                {new Date(entry.timestamp).toLocaleTimeString()}
+              </span>
+            </button>
+          ))
         )}
       </div>
     </div>

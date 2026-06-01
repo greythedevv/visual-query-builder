@@ -1,83 +1,124 @@
 'use client'
-import { useState } from 'react'
+import { useState }        from 'react'
 import { SyntaxHighlight } from './SyntaxHighlight'
-import { useQueryStore } from '@/app/store/queryStore'
-import { Copy, Check } from 'lucide-react'
-
-interface Props {
-  sql: string
-  mongo: string
-}
+import { useQueryStore }   from '@/app/store/queryStore'
+import { Copy, Check }     from 'lucide-react'
 
 type Tab = 'sql' | 'mongo' | 'json'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'sql',   label: 'SQL' },
-  { id: 'mongo', label: 'MongoDB' },
-  { id: 'json',  label: 'JSON Tree' },
+const TABS: { id: Tab; label: string; icon: string; filename: string }[] = [
+  { id: 'sql',   label: 'SQL',       icon: '⌗',  filename: 'query.sql'  },
+  { id: 'mongo', label: 'MongoDB',   icon: '◈',  filename: 'filter.js'  },
+  { id: 'json',  label: 'JSON Tree', icon: '{}', filename: 'tree.json'  },
 ]
 
-export function QueryPreview({ sql, mongo }: Props) {
+export function QueryPreview({ sql, mongo }: { sql: string; mongo: string }) {
   const [activeTab, setActiveTab] = useState<Tab>('sql')
   const [copied, setCopied]       = useState(false)
   const { rootGroup }             = useQueryStore()
 
   const jsonContent = JSON.stringify(rootGroup, null, 2)
-  const content = activeTab === 'sql' ? sql : activeTab === 'mongo' ? mongo : jsonContent
-
-  async function copy() {
-    await navigator.clipboard.writeText(content)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const content     = activeTab === 'sql' ? sql : activeTab === 'mongo' ? mongo : jsonContent
+  const lang        = activeTab === 'sql' ? 'sql' : 'json'
+  const activeFile  = TABS.find(t => t.id === activeTab)!.filename
+  const isEmpty     = !sql && !mongo
+  
+ async function copy() {
+   try {
+      await navigator.clipboard.writeText(content)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard access denied or unavailable
+    }
   }
-
-  if (!sql && !mongo) {
-    return (
-      <div className="flex items-center justify-center h-32 text-sm text-zinc-400">
-        Select a schema and add conditions to see preview
-      </div>
-    )
-  }
-
+  
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex gap-1">
-          {TABS.map(tab => (
+    <div className="flex flex-col h-full bg-[var(--color-surface-0)]">
+
+      {/* Tab bar */}
+      <div className="flex items-stretch border-b border-[var(--color-border-base)] bg-[var(--color-surface-2)] shrink-0">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={[
+              'relative flex items-center gap-2 px-4 py-2.5 text-[11px] font-mono border-r border-[var(--color-border-base)] transition-all',
+              activeTab === tab.id
+                ? 'bg-[var(--color-surface-0)] text-[var(--color-ink-1)]'
+                : 'text-[var(--color-ink-3)] hover:text-[var(--color-ink-2)] hover:bg-[var(--color-surface-3)]',
+            ].join(' ')}
+          >
+            {activeTab === tab.id && (
+              <span className="absolute top-0 inset-x-0 h-[2px] bg-[var(--color-accent)] rounded-b" />
+            )}
+            <span className={activeTab === tab.id ? 'text-[var(--color-accent)]' : 'text-[var(--color-ink-3)]'}>
+              {tab.icon}
+            </span>
+            {tab.label}
+          </button>
+        ))}
+
+        {/* Copy button */}
+        <div className="ml-auto flex items-center px-3">
+          {!isEmpty && (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-md text-xs font-mono font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-              }`}
+              onClick={copy}
+              className={[
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-mono transition-all',
+                copied
+                  ? 'text-[var(--color-ok)] bg-[var(--color-ok)]/10'
+                  : 'text-[var(--color-ink-3)] hover:text-[var(--color-ink-1)] hover:bg-[var(--color-surface-3)]',
+              ].join(' ')}
             >
-              {tab.label}
+              {copied ? <Check size={10} /> : <Copy size={10} />}
+              {copied ? 'copied!' : 'copy'}
             </button>
-          ))}
+          )}
         </div>
-        <button
-          onClick={copy}
-          className="flex items-center gap-1.5 text-xs px-2 py-1.5 rounded-md text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          aria-label="Copy to clipboard"
-        >
-          {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 bg-zinc-50 dark:bg-zinc-900/50">
-        {activeTab === 'sql' && (
-          <SyntaxHighlight code={sql || '-- Add conditions to generate SQL'} language="sql" />
-        )}
-        {activeTab === 'mongo' && (
-          <SyntaxHighlight code={mongo || '{}'} language="json" />
-        )}
-        {activeTab === 'json' && (
-          <SyntaxHighlight code={jsonContent} language="json" />
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 px-4 py-1.5 bg-[var(--color-surface-2)] border-b border-[var(--color-border-soft)] shrink-0">
+        <span className="text-[10px] font-mono text-[var(--color-ink-3)]">query</span>
+        <span className="text-[10px] font-mono text-[var(--color-ink-3)]">/</span>
+        <span className="text-[10px] font-mono text-[var(--color-ink-2)]">{activeFile}</span>
+      </div>
+
+      {/* Code */}
+      <div className="flex-1 overflow-auto py-3">
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center h-full gap-3">
+            <span className="text-3xl font-mono text-[var(--color-ink-3)] opacity-30 select-none">
+              {activeTab === 'sql' ? 'SELECT' : activeTab === 'mongo' ? '{ }' : '[ ]'}
+            </span>
+            <p className="text-[11px] font-mono text-[var(--color-ink-3)]">
+              select a schema and add conditions
+            </p>
+          </div>
+        ) : (
+          <SyntaxHighlight
+            code={
+              activeTab === 'sql'   ? (sql   || '-- add conditions to generate SQL') :
+              activeTab === 'mongo' ? (mongo || '{}') :
+              jsonContent
+            }
+            language={lang}
+          />
         )}
       </div>
+
+      {/* Status bar */}
+      {!isEmpty && (
+        <div className="flex items-center justify-between px-4 py-1.5 bg-[var(--color-accent)] shrink-0">
+          <span className="text-[10px] font-mono text-white/80 tracking-widest uppercase">
+            {activeTab}
+          </span>
+          <span className="text-[10px] font-mono text-white/70">
+            {content.split('\n').length} lines · {content.length} chars
+          </span>
+        </div>
+      )}
     </div>
   )
 }

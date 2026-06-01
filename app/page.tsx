@@ -1,35 +1,31 @@
 'use client'
 import { useState, useCallback, useRef } from 'react'
 import { useTheme } from 'next-themes'
-import { QueryBuilder } from '@/app/components/QueryBuilder'
-import { QueryPreview } from '@/app/components/QueryPreview'
-import { ResultsPanel } from '@/app/components/ResultsPanel'
-import { QueryHistory } from '@/app/components/Sidebar/QueryHistory'
-import { SavedPresets } from '@/app/components/Sidebar/SavedPresets'
-import { useQueryBuilder } from '@/app/hooks/useQueryBuilder'
+import { QueryBuilder }         from '@/app/components/QueryBuilder'
+import { QueryPreview }         from '@/app/components/QueryPreview'
+import { ResultsPanel }         from '@/app/components/ResultsPanel'
+import { QueryHistory }         from '@/app/components/Sidebar/QueryHistory'
+import { SavedPresets }         from '@/app/components/Sidebar/SavedPresets'
+import { useQueryBuilder }      from '@/app/hooks/useQueryBuilder'
 import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts'
-import { useQueryStore } from '@/app/store/queryStore'
-import {
-  Sun, Moon, Download, Upload, RotateCcw,
-  History, Bookmark, X, Menu,
-} from 'lucide-react'
+import { useQueryStore }        from '@/app/store/queryStore'
+import { Sun, Moon, Download, Upload, RotateCcw, History, Bookmark, X, Play, Menu } from 'lucide-react'
 
 type SidebarTab = 'history' | 'presets'
 type MobileTab  = 'builder' | 'preview' | 'results'
 
 export default function Home() {
-  const { theme, setTheme }             = useTheme()
-  const { schema, reset }               = useQueryStore()
-  const [sidebarTab, setSidebarTab]     = useState<SidebarTab>('history')
-  const [sidebarOpen, setSidebarOpen]   = useState(false)
-  const [mobileTab, setMobileTab]       = useState<MobileTab>('builder')
-  const fileInputRef                    = useRef<HTMLInputElement>(null)
+  const { theme, setTheme }           = useTheme()
+  const { schema, reset }             = useQueryStore()
+  const [sidebarTab, setSidebarTab]   = useState<SidebarTab>('history')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [mobileTab, setMobileTab]     = useState<MobileTab>('builder')
+  const fileInputRef                  = useRef<HTMLInputElement>(null)
 
   const {
     sql, mongo, errors,
     results, isExecuting, executionTime, hasExecuted,
-    importError,
-    execute, exportQuery, importQuery,
+    importError, execute, exportQuery, importQuery,
   } = useQueryBuilder()
 
   const toggleHistory = useCallback(() => {
@@ -37,180 +33,189 @@ export default function Home() {
     setSidebarOpen(o => !o)
   }, [])
 
-  useKeyboardShortcuts({
-    onExecute:       execute,
-    onExport:        exportQuery,
-    onReset:         reset,
-    onToggleHistory: toggleHistory,
-  })
+  useKeyboardShortcuts({ onExecute: execute, onExport: exportQuery, onReset: reset, onToggleHistory: toggleHistory })
+
+  const canRun = !isExecuting && errors.length === 0 && !!schema
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex flex-col h-screen overflow-hidden bg-[var(--color-surface-0)]">
 
-      {/* ── Top Nav ── */}
-      <header className="flex items-center justify-between px-3 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0 z-20">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center shrink-0">
-            <span className="text-white text-xs font-bold">Q</span>
+      {/* ── Nav ── */}
+      <header className="flex items-center justify-between px-4 h-14 shrink-0 bg-[var(--color-surface-1)] border-b border-[var(--color-border-base)] z-20">
+
+        {/* Left: logo + name */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[var(--color-accent)] flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" fill="white" fillOpacity=".95"/>
+              <rect x="9"   y="1.5" width="5.5" height="5.5" rx="1.5" fill="white" fillOpacity=".55"/>
+              <rect x="1.5" y="9"   width="5.5" height="5.5" rx="1.5" fill="white" fillOpacity=".55"/>
+              <rect x="9"   y="9"   width="5.5" height="5.5" rx="1.5" fill="white" fillOpacity=".25"/>
+            </svg>
           </div>
-          <span className="font-semibold text-sm text-zinc-800 dark:text-zinc-200 hidden sm:block">
-            Visual Query Builder
+          {/* Desktop: full name. Mobile: "QF" abbreviation */}
+          <span className="hidden sm:block font-semibold text-sm tracking-tight text-[var(--color-ink-1)]">
+            QueryForge
           </span>
-          <span className="font-semibold text-sm text-zinc-800 dark:text-zinc-200 sm:hidden">
-            VQB
+          <span className="sm:hidden font-semibold text-sm tracking-tight text-[var(--color-ink-1)]">
+            QF
           </span>
+          {/* Schema badge — desktop only */}
           {schema && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300">
+              <span className="hidden sm:inline-flex items-center text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-ring)]">
               {schema.name}
             </span>
           )}
         </div>
 
+        {/* Right: actions */}
         <div className="flex items-center gap-1">
-          <span className="text-xs text-zinc-400 hidden lg:block mr-2">
-            <kbd className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-xs text-zinc-600 dark:text-zinc-400">
-              Ctrl+Enter
-            </kbd>{' '}to run
+          <span className="text-[10px] font-mono text-[var(--color-ink-3)] mr-2 hidden xl:block">
+            ctrl+enter to run
           </span>
 
-          <button
-            onClick={reset}
-            title="Reset (Ctrl+R)"
-            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          >
-            <RotateCcw size={15} />
-          </button>
-          <button
-            onClick={exportQuery}
-            title="Export JSON"
-            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          >
-            <Download size={15} />
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            title="Import JSON"
-            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          >
-            <Upload size={15} />
-          </button>
+          {/* Hide reset/export/import on mobile to save space */}
+          <NavIconBtn onClick={reset} title="Reset (Ctrl+R)" className="hidden sm:flex">
+            <RotateCcw size={14} />
+          </NavIconBtn>
+          <NavIconBtn onClick={exportQuery} title="Export JSON" className="hidden sm:flex">
+            <Download size={14} />
+          </NavIconBtn>
+          <NavIconBtn onClick={() => fileInputRef.current?.click()} title="Import JSON" className="hidden sm:flex">
+            <Upload size={14} />
+          </NavIconBtn>
           <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            className="hidden"
-            onChange={e => {
-              const file = e.target.files?.[0]
-              if (file) importQuery(file)
-              e.target.value = ''
-            }}
+            ref={fileInputRef} type="file" accept=".json" className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) importQuery(f); e.target.value = '' }}
           />
+
+          <div className="hidden sm:block w-px h-5 bg-[var(--color-border-strong)] mx-1" />
+
           <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            title="Toggle theme"
-            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            onClick={execute}
+            disabled={!canRun}
+            className={[
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+              canRun
+                ? 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white'
+                : 'bg-[var(--color-surface-3)] text-[var(--color-ink-3)] cursor-not-allowed',
+            ].join(' ')}
           >
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            <Play size={11} />
+            <span className="hidden sm:inline">Run</span>
           </button>
-          <button
+
+          <NavIconBtn onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Toggle theme">
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </NavIconBtn>
+
+          {/* Mobile sidebar toggle — uses Menu icon, not History */}
+          <NavIconBtn
             onClick={() => setSidebarOpen(o => !o)}
-            title="Menu"
-            className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors lg:hidden"
+            title="Open sidebar"
+            className="lg:hidden"
           >
-            <Menu size={15} />
-          </button>
+            <Menu size={14} />
+          </NavIconBtn>
         </div>
       </header>
 
-      {/* Import error */}
       {importError && (
-        <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs border-b border-red-200 dark:border-red-800 shrink-0">
+        <div className="px-4 py-2 text-xs font-mono bg-red-950/30 text-[var(--color-bad)] border-b border-red-900/30 shrink-0">
           Import error: {importError}
         </div>
       )}
 
-      {/* ── Mobile Tab Bar ── */}
-      <div className="flex lg:hidden shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+      {/* Mobile tab bar */}
+      <div className="flex lg:hidden shrink-0 bg-[var(--color-surface-1)] border-b border-[var(--color-border-base)]">
         {(['builder', 'preview', 'results'] as MobileTab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setMobileTab(tab)}
-            className={`flex-1 py-2.5 text-xs font-medium capitalize border-b-2 transition-colors ${
+            className={[
+              'flex-1 py-2.5 text-[10px] font-semibold tracking-widest uppercase transition-colors border-b-2',
               mobileTab === tab
-                ? 'border-violet-600 text-violet-600 dark:text-violet-400 dark:border-violet-400'
-                : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
-            }`}
+                ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
+                : 'border-transparent text-[var(--color-ink-3)] hover:text-[var(--color-ink-2)]',
+            ].join(' ')}
           >
             {tab}
           </button>
         ))}
       </div>
 
-      {/* ── Main ── */}
+      {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden relative">
 
         {/* Mobile overlay */}
         {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
+          <div className="fixed inset-0 bg-black/60 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
         )}
 
         {/* ── Sidebar ── */}
-        <aside className={`
-          fixed top-0 left-0 h-full w-72 z-40 flex flex-col
-          bg-white dark:bg-zinc-900
-          border-r border-zinc-200 dark:border-zinc-800
-          transition-transform duration-300 ease-in-out
-          lg:relative lg:w-56 lg:shrink-0 lg:z-auto lg:translate-x-0
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}>
-          <div className="flex items-center gap-1 p-2 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-            {(['history', 'presets'] as SidebarTab[]).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setSidebarTab(tab)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
-                  sidebarTab === tab
-                    ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400'
-                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                }`}
-              >
-                {tab === 'history' ? <History size={12} /> : <Bookmark size={12} />}
-                {tab}
-              </button>
-            ))}
+        <aside className={[
+          'fixed top-0 left-0 h-full z-40 flex flex-col',
+          'w-56 shrink-0',
+          'border-r border-[var(--color-border-base)]',
+          'bg-[var(--color-surface-1)]',
+          'transition-transform duration-300 ease-in-out',
+          'lg:relative lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        ].join(' ')}>
+
+          {/* Sidebar tab switcher */}
+          <div className="flex items-center gap-1.5 px-3 py-3 border-b border-[var(--color-border-base)] shrink-0">
+            <button
+              onClick={() => setSidebarTab('history')}
+              className={[
+                'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all',
+                sidebarTab === 'history'
+                  ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-ring)]'
+                  : 'text-[var(--color-ink-3)] hover:text-[var(--color-ink-1)] hover:bg-[var(--color-surface-3)]',
+              ].join(' ')}
+            >
+              <History size={11} />
+              History
+            </button>
+            <button
+              onClick={() => setSidebarTab('presets')}
+              className={[
+                'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all',
+                sidebarTab === 'presets'
+                  ? 'bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-ring)]'
+                  : 'text-[var(--color-ink-3)] hover:text-[var(--color-ink-1)] hover:bg-[var(--color-surface-3)]',
+              ].join(' ')}
+            >
+              <Bookmark size={11} />
+              Presets
+            </button>
+            {/* Close — mobile only */}
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1.5 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+              className="lg:hidden p-1.5 rounded-md text-[var(--color-ink-3)] hover:text-[var(--color-ink-1)] hover:bg-[var(--color-surface-3)] transition-colors"
             >
-              <X size={14} />
+              <X size={13} />
             </button>
           </div>
+
           <div className="flex-1 overflow-hidden">
             {sidebarTab === 'history' ? <QueryHistory /> : <SavedPresets />}
           </div>
         </aside>
 
-        {/* ── Desktop: 3 panels ── */}
+        {/* ── Desktop 3-panel ── */}
         <div className="hidden lg:flex flex-1 overflow-hidden">
-          <main className="flex-1 overflow-hidden flex flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+          <main className="flex-1 overflow-hidden flex flex-col border-r border-[var(--color-border-base)] bg-[var(--color-surface-1)]">
             <QueryBuilder errors={errors} />
           </main>
-
-          <aside className="w-[400px] shrink-0 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-hidden border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col">
-              <div className="px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-                <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
-                  Query Preview
-                </span>
-              </div>
+          <aside className="w-[420px] shrink-0 flex flex-col overflow-hidden bg-[var(--color-surface-0)]">
+            <div className="flex-1 overflow-hidden border-b border-[var(--color-border-base)] flex flex-col">
+              <PanelLabel>Query preview</PanelLabel>
               <div className="flex-1 overflow-hidden">
                 <QueryPreview sql={sql} mongo={mongo} />
               </div>
             </div>
-            <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900">
+            <div className="flex-1 overflow-hidden">
               <ResultsPanel
                 results={results}
                 isExecuting={isExecuting}
@@ -224,27 +229,23 @@ export default function Home() {
           </aside>
         </div>
 
-        {/* ── Mobile: one tab at a time ── */}
+        {/* ── Mobile single panel ── */}
         <div className="flex lg:hidden flex-1 overflow-hidden">
           {mobileTab === 'builder' && (
-            <main className="flex-1 overflow-hidden flex flex-col bg-white dark:bg-zinc-900">
+            <main className="flex-1 overflow-hidden flex flex-col bg-[var(--color-surface-1)]">
               <QueryBuilder errors={errors} />
             </main>
           )}
           {mobileTab === 'preview' && (
-            <div className="flex-1 overflow-hidden flex flex-col bg-white dark:bg-zinc-900">
-              <div className="px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-                <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
-                  Query Preview
-                </span>
-              </div>
+            <div className="flex-1 overflow-hidden flex flex-col bg-[var(--color-surface-1)]">
+              <PanelLabel>Query preview</PanelLabel>
               <div className="flex-1 overflow-hidden">
                 <QueryPreview sql={sql} mongo={mongo} />
               </div>
             </div>
           )}
           {mobileTab === 'results' && (
-            <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900">
+            <div className="flex-1 overflow-hidden bg-[var(--color-surface-1)]">
               <ResultsPanel
                 results={results}
                 isExecuting={isExecuting}
@@ -257,8 +258,41 @@ export default function Home() {
             </div>
           )}
         </div>
-
       </div>
     </div>
+  )
+}
+
+function PanelLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="px-5 py-3 border-b border-[var(--color-border-base)] shrink-0">
+      <span className="text-[10px] font-semibold tracking-widest uppercase text-[var(--color-ink-3)]">
+        {children}
+      </span>
+    </div>
+  )
+}
+
+function NavIconBtn({
+  onClick, title, children, className = '',
+}: {
+  onClick?: () => void
+  title?: string
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={[
+        'flex items-center justify-center w-8 h-8 rounded-lg',
+        'text-[var(--color-ink-2)] hover:text-[var(--color-ink-1)]',
+        'hover:bg-[var(--color-surface-3)] transition-all',
+        className,
+      ].join(' ')}
+    >
+      {children}
+    </button>
   )
 }
