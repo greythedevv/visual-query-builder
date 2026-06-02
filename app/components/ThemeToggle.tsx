@@ -22,7 +22,7 @@ export function ThemeToggle() {
       <span suppressHydrationWarning>
         {mounted
           ? resolvedTheme === 'dark' ? <Sun size={14} /> : <Moon size={14} />
-          : <Moon size={14} />
+          : <Sun size={14} />
         }
       </span>
     </button>

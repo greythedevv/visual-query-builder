@@ -5,19 +5,34 @@ function escapeSQLString(value: string): string {
   return String(value).replace(/'/g, "''")
 }
 
+
+function escapeSQLLike(value: string): string {
+  return escapeSQLString(value).replace(/[\\%_]/g, '\\$&')
+}
+
 function ruleToSQL(rule: QueryRule): string {
   const { field, operator, value } = rule
   switch (operator) {
     case 'equals':       return `${field} = '${escapeSQLString(String(value))}'`
     case 'not_equals':   return `${field} != '${escapeSQLString(String(value))}'`
-    case 'contains':     return `${field} LIKE '%${escapeSQLString(String(value))}%'`
-    case 'starts_with':  return `${field} LIKE '${escapeSQLString(String(value))}%'`
-    case 'greater_than': return `${field} > ${Number(value)}`
-    case 'less_than':    return `${field} < ${Number(value)}`
+     case 'contains':     return `${field} LIKE '%${escapeSQLLike(String(value))}%' ESCAPE '\\'`
+    case 'starts_with':  return `${field} LIKE '${escapeSQLLike(String(value))}%' ESCAPE '\\'`
+    case 'greater_than': {
+      const n = Number(value)
+      return Number.isFinite(n) ? `${field} > ${n}` : ''
+    }
+    case 'less_than': {
+      const n = Number(value)
+      return Number.isFinite(n) ? `${field} < ${n}` : ''
+    }
     case 'in_array':     return `${field} IN (${(value as string[]).map(v => `'${escapeSQLString(v)}'`).join(', ')})`
     case 'between': {
-      const [a, b] = value as [number, number]
-      return `${field} BETWEEN ${Number(a)} AND ${Number(b)}`
+    const [a, b] = value as [unknown, unknown]
+      const start = Number(a)
+      const end = Number(b)
+      return Number.isFinite(start) && Number.isFinite(end)
+        ? `${field} BETWEEN ${start} AND ${end}`
+        : ''
     }
     case 'is_null':      return `${field} IS NULL`
     case 'is_not_null':  return `${field} IS NOT NULL`

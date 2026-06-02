@@ -25,7 +25,7 @@ A production-grade visual query builder built with Next.js, TypeScript, and Tail
 
 QueryForge is built around a **recursive tree data model**. Every query is represented as a tree of nodes — either a `QueryRule` (a single condition) or a `QueryGroup` (a logical container of rules and/or other groups). This mirrors how real query engines represent compound filter expressions.
 
-```
+```text
 QueryGroup (AND)
 ├── QueryRule  → status = 'active'
 ├── QueryRule  → age > 18
@@ -101,6 +101,7 @@ All tree mutations use recursive pure functions that return new objects at every
 
 ```ts
 function findAndUpdate(group, id, updater) {
+  if (group.id === id) return updater(group)
   return {
     ...group,
     children: group.children.map(child => {
@@ -218,7 +219,7 @@ The results table paginates (10 rows per page) rather than virtualizing. With th
 
 ### Hydration and Theme
 
-The theme toggle uses `suppressHydrationWarning` on the icon element to avoid a React hydration mismatch between server-rendered HTML (always dark) and client-rendered HTML (user's saved theme). This is the standard pattern for `next-themes`.
+The theme toggle uses a `mounted` guard to avoid a React hydration mismatch between server-rendered HTML (always dark) and client-rendered HTML (user's saved theme). The icon is withheld until after the first paint, then swapped in via `requestAnimationFrame`. This is the standard pattern for `next-themes`.
 
 ---
 
@@ -285,7 +286,7 @@ npm run test
 
 ## Folder Structure
 
-```
+```text
 src/
 └── app/
     ├── components/
