@@ -11,12 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="h-screen overflow-hidden">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange={false}
-        >
+        <ThemeProvider>
           {children}
         </ThemeProvider>
       </body>
