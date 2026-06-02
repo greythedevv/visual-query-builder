@@ -13,26 +13,33 @@ function escapeSQLLike(value: string): string {
 function ruleToSQL(rule: QueryRule): string {
   const { field, operator, value } = rule
   switch (operator) {
-    case 'equals':       return `${field} = '${escapeSQLString(String(value))}'`
-    case 'not_equals':   return `${field} != '${escapeSQLString(String(value))}'`
-     case 'contains':     return `${field} LIKE '%${escapeSQLLike(String(value))}%' ESCAPE '\\'`
-    case 'starts_with':  return `${field} LIKE '${escapeSQLLike(String(value))}%' ESCAPE '\\'`
+    case 'equals': {
+       if (typeof value === 'boolean')
+        return `${field} = ${value}`
+      return `${field} = '${value}'`
+    }
+    case 'not_equals': {
+      if (typeof value === 'boolean')
+        return `${field} != ${value}`
+      return `${field} != '${value}'`
+    }
+    case 'contains':     return `${field} LIKE '%${value}%'`
+    case 'starts_with':  return `${field} LIKE '${value}%'`
     case 'greater_than': {
-      const n = Number(value)
-      return Number.isFinite(n) ? `${field} > ${n}` : ''
+      const isDate = typeof value === 'string' && isNaN(Number(value))
+      return isDate ? `${field} > '${value}'` : `${field} > ${value}`
     }
     case 'less_than': {
-      const n = Number(value)
-      return Number.isFinite(n) ? `${field} < ${n}` : ''
+      const isDate = typeof value === 'string' && isNaN(Number(value))
+      return isDate ? `${field} < '${value}'` : `${field} < ${value}`
     }
-    case 'in_array':     return `${field} IN (${(value as string[]).map(v => `'${escapeSQLString(v)}'`).join(', ')})`
+    case 'in_array':     return `${field} IN (${(value as string[]).map(v => `'${v}'`).join(', ')})`
     case 'between': {
-    const [a, b] = value as [unknown, unknown]
-      const start = Number(a)
-      const end = Number(b)
-      return Number.isFinite(start) && Number.isFinite(end)
-        ? `${field} BETWEEN ${start} AND ${end}`
-        : ''
+      const [a, b] = value as [number | string, number | string]
+      const isDate = typeof a === 'string' && isNaN(Number(a))
+      return isDate
+        ? `${field} BETWEEN '${a}' AND '${b}'`
+        : `${field} BETWEEN ${a} AND ${b}`
     }
     case 'is_null':      return `${field} IS NULL`
     case 'is_not_null':  return `${field} IS NOT NULL`
@@ -59,7 +66,6 @@ export function buildSQL(root: QueryGroup, table = 'records'): string {
   return where ? `SELECT * FROM ${table}\nWHERE ${where}` : `SELECT * FROM ${table}`
 }
 
-// Mongo builder
 function ruleToMongo(rule: QueryRule): object {
   const { field, operator, value } = rule
   switch (operator) {
@@ -71,7 +77,7 @@ function ruleToMongo(rule: QueryRule): object {
     case 'less_than':    return { [field]: { $lt: value } }
     case 'in_array':     return { [field]: { $in: value } }
     case 'between': {
-      const [a, b] = value as [number, number]
+      const [a, b] = value as [number | string, number | string]
       return { [field]: { $gte: a, $lte: b } }
     }
     case 'is_null':      return { [field]: null }

@@ -9,7 +9,7 @@ export interface SchemaField {
   key: string
   label: string
   type: FieldType
-  enumValues?: string[]   // only when type === 'enum'
+  enumValues?: string[]
 }
 
 export interface Schema {
@@ -18,7 +18,6 @@ export interface Schema {
   fields: SchemaField[]
 }
 
-// The recursive query tree
 export type LogicOperator = 'AND' | 'OR'
 
 export interface QueryRule {
@@ -26,7 +25,7 @@ export interface QueryRule {
   type: 'rule'
   field: string
   operator: Operator
-  value: string | number | string[] | [number, number] | null
+  value?: string | number | boolean | string[] | [number, number] | [string, string] | null
 }
 
 export interface QueryGroup {
@@ -34,7 +33,7 @@ export interface QueryGroup {
   type: 'group'
   logic: LogicOperator
   collapsed: boolean
-  children: QueryNode[]   // can contain rules OR more groups
+  children: QueryNode[]
 }
 
 export type QueryNode = QueryRule | QueryGroup
