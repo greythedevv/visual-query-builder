@@ -26,6 +26,7 @@ interface QueryStore extends QueryState {
 }
 
 function findAndUpdate(group: QueryGroup, id: string, updater: (n: QueryNode) => QueryNode): QueryGroup {
+  if (group.id === id) return updater(group) as QueryGroup
   return {
     ...group,
     children: group.children.map(child => {
@@ -168,8 +169,8 @@ export const useQueryStore = create<QueryStore>()(
       reset: () => set({ rootGroup: makeDefaultGroup() }),
     }),
     {
-      name: 'vqb-store',           // localStorage key
-      partialize: (state) => ({    // only persist history + presets, not ephemeral schema
+      name: 'vqb-store',
+      partialize: (state) => ({
         history: state.history,
         presets: state.presets,
       }),

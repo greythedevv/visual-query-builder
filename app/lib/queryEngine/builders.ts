@@ -1,5 +1,15 @@
 import { QueryGroup, QueryNode, QueryRule } from './types'
 
+// Escape single quotes in SQL string values to prevent injection
+function escapeSQLString(value: string): string {
+  return String(value).replace(/'/g, "''")
+}
+
+
+function escapeSQLLike(value: string): string {
+  return escapeSQLString(value).replace(/[\\%_]/g, '\\$&')
+}
+
 function ruleToSQL(rule: QueryRule): string {
   const { field, operator, value } = rule
   switch (operator) {
@@ -33,7 +43,7 @@ function ruleToSQL(rule: QueryRule): string {
     }
     case 'is_null':      return `${field} IS NULL`
     case 'is_not_null':  return `${field} IS NOT NULL`
-    case 'regex':        return `${field} ~ '${value}'`
+    case 'regex':        return `${field} ~ '${escapeSQLString(String(value))}'`
     default:             return ''
   }
 }
