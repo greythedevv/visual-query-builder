@@ -5,22 +5,48 @@ function evaluateRule(record: Record<string, unknown>, rule: QueryRule): boolean
   const { operator, value } = rule
 
   switch (operator) {
-    case 'equals':       return val == value
-    case 'not_equals':   return val != value
-    case 'contains':     return String(val).toLowerCase().includes(String(value).toLowerCase())
-    case 'starts_with':  return String(val).toLowerCase().startsWith(String(value).toLowerCase())
-    case 'greater_than': return Number(val) > Number(value)
-    case 'less_than':    return Number(val) < Number(value)
-    case 'in_array':     return (value as string[]).includes(String(val))
-    case 'between': {
-      const [a, b] = value as [number, number]
-      const n = Number(val)
-      return n >= a && n <= b
+    case 'equals': {
+      if (typeof val === 'boolean')
+        return val === (value === true || value === 'true')
+      if (typeof val === 'string' && typeof value === 'string')
+        return val.toLowerCase() === value.toLowerCase()
+      return val == value
     }
-    case 'is_null':      return val == null || val === ''
-    case 'is_not_null':  return val != null && val !== ''
-    case 'regex':        return new RegExp(String(value), 'i').test(String(val))
-    default:             return true
+    case 'not_equals': {
+      if (typeof val === 'boolean')
+        return val !== (value === true || value === 'true')
+      if (typeof val === 'string' && typeof value === 'string')
+        return val.toLowerCase() !== value.toLowerCase()
+      return val != value
+    }
+    case 'contains':    return String(val).toLowerCase().includes(String(value).toLowerCase())
+    case 'starts_with': return String(val).toLowerCase().startsWith(String(value).toLowerCase())
+    case 'greater_than': {
+      const isDate = typeof value === 'string' && isNaN(Number(value))
+      if (isDate) return String(val) > String(value)
+      return Number(val) > Number(value)
+    }
+    case 'less_than': {
+      const isDate = typeof value === 'string' && isNaN(Number(value))
+      if (isDate) return String(val) < String(value)
+      return Number(val) < Number(value)
+    }
+    case 'in_array':    return (value as string[]).includes(String(val))
+    case 'between': {
+      const [a, b] = value as [number | string, number | string]
+      if (a === '' || b === '' || a == null || b == null) return true
+      const isDate = typeof a === 'string' && isNaN(Number(a))
+      if (isDate) {
+        const strVal = String(val)
+        return strVal >= String(a) && strVal <= String(b)
+      }
+      const n = Number(val)
+      return n >= Number(a) && n <= Number(b)
+    }
+    case 'is_null':     return val == null || val === ''
+    case 'is_not_null': return val != null && val !== ''
+    case 'regex':       return new RegExp(String(value), 'i').test(String(val))
+    default:            return true
   }
 }
 

@@ -8,6 +8,8 @@ import { GripVertical, Trash2 } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
+
+
 /* Single source-of-truth for every input / select */
 const INPUT =
   'h-9 w-full rounded-lg border border-[var(--color-border-base)] bg-[var(--color-surface-3)] px-3 text-xs text-[var(--color-ink-1)] outline-none transition-all focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent-ring)] placeholder:text-[var(--color-ink-3)]'
@@ -79,6 +81,26 @@ export const RuleRow = memo(({ rule, hasError }: { rule: QueryRule; hasError?: b
       )
     }
 
+    if (field.type === 'date' && rule.operator === 'between') {
+      const [a, b] = (rule.value as [string, string]) || ['', '']
+      return (
+        <div className="flex gap-2 max-w-sm">
+          <input
+            type="date"
+            className={INPUT}
+            value={a}
+            onChange={e => updateRule(rule.id, { value: [e.target.value, b] })}
+          />
+          <input
+            type="date"
+            className={INPUT}
+            value={b}
+            onChange={e => updateRule(rule.id, { value: [a, e.target.value] })}
+          />
+        </div>
+      )
+    }
+
     if (field.type === 'date') {
       return (
         <input
@@ -100,6 +122,20 @@ export const RuleRow = memo(({ rule, hasError }: { rule: QueryRule; hasError?: b
         />
       )
     }
+
+    if (field.type === 'boolean') {
+  return (
+    <select
+      className={INPUT}
+      value={String(rule.value ?? '')}
+      onChange={e => updateRule(rule.id, { value: e.target.value === 'true' })}
+    >
+      <option value="">Select value…</option>
+      <option value="true">True</option>
+      <option value="false">False</option>
+    </select>
+  )
+}
 
     return (
       <input

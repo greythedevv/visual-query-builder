@@ -3,16 +3,33 @@ import { QueryGroup, QueryNode, QueryRule } from './types'
 function ruleToSQL(rule: QueryRule): string {
   const { field, operator, value } = rule
   switch (operator) {
-    case 'equals':       return `${field} = '${value}'`
-    case 'not_equals':   return `${field} != '${value}'`
+    case 'equals': {
+      if (typeof value === 'boolean' || value === 'true' || value === 'false')
+        return `${field} = ${value}`
+      return `${field} = '${value}'`
+    }
+    case 'not_equals': {
+      if (typeof value === 'boolean' || value === 'true' || value === 'false')
+        return `${field} != ${value}`
+      return `${field} != '${value}'`
+    }
     case 'contains':     return `${field} LIKE '%${value}%'`
     case 'starts_with':  return `${field} LIKE '${value}%'`
-    case 'greater_than': return `${field} > ${value}`
-    case 'less_than':    return `${field} < ${value}`
+    case 'greater_than': {
+      const isDate = typeof value === 'string' && isNaN(Number(value))
+      return isDate ? `${field} > '${value}'` : `${field} > ${value}`
+    }
+    case 'less_than': {
+      const isDate = typeof value === 'string' && isNaN(Number(value))
+      return isDate ? `${field} < '${value}'` : `${field} < ${value}`
+    }
     case 'in_array':     return `${field} IN (${(value as string[]).map(v => `'${v}'`).join(', ')})`
     case 'between': {
-      const [a, b] = value as [number, number]
-      return `${field} BETWEEN ${a} AND ${b}`
+      const [a, b] = value as [number | string, number | string]
+      const isDate = typeof a === 'string' && isNaN(Number(a))
+      return isDate
+        ? `${field} BETWEEN '${a}' AND '${b}'`
+        : `${field} BETWEEN ${a} AND ${b}`
     }
     case 'is_null':      return `${field} IS NULL`
     case 'is_not_null':  return `${field} IS NOT NULL`
@@ -39,7 +56,6 @@ export function buildSQL(root: QueryGroup, table = 'records'): string {
   return where ? `SELECT * FROM ${table}\nWHERE ${where}` : `SELECT * FROM ${table}`
 }
 
-// Mongo builder
 function ruleToMongo(rule: QueryRule): object {
   const { field, operator, value } = rule
   switch (operator) {
@@ -51,7 +67,7 @@ function ruleToMongo(rule: QueryRule): object {
     case 'less_than':    return { [field]: { $lt: value } }
     case 'in_array':     return { [field]: { $in: value } }
     case 'between': {
-      const [a, b] = value as [number, number]
+      const [a, b] = value as [number | string, number | string]
       return { [field]: { $gte: a, $lte: b } }
     }
     case 'is_null':      return { [field]: null }
