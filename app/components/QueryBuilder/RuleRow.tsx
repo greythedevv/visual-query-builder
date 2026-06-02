@@ -124,18 +124,21 @@ export const RuleRow = memo(({ rule, hasError }: { rule: QueryRule; hasError?: b
     }
 
     if (field.type === 'boolean') {
-  return (
-    <select
-      className={INPUT}
-      value={String(rule.value ?? '')}
-      onChange={e => updateRule(rule.id, { value: e.target.value === 'true' })}
-    >
-      <option value="">Select value…</option>
-      <option value="true">True</option>
-      <option value="false">False</option>
-    </select>
-  )
-}
+       return (
+        <select
+          className={INPUT}
+          value={String(rule.value ?? '')}
+          onChange={e => {
+            const v = e.target.value
+            updateRule(rule.id, { value: v === '' ? null : v === 'true' })
+          }}
+        >
+          <option value="">Select value…</option>
+          <option value="true">True</option>
+          <option value="false">False</option>
+        </select>
+      )
+    }
 
     return (
       <input

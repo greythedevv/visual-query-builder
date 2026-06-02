@@ -34,14 +34,17 @@ function evaluateRule(record: Record<string, unknown>, rule: QueryRule): boolean
     case 'in_array':    return (value as string[]).includes(String(val))
     case 'between': {
       const [a, b] = value as [number | string, number | string]
-      if (a === '' || b === '' || a == null || b == null) return true
       const isDate = typeof a === 'string' && isNaN(Number(a))
       if (isDate) {
         const strVal = String(val)
-        return strVal >= String(a) && strVal <= String(b)
+         const lower = a === '' || a == null ? true : strVal >= String(a)
+        const upper = b === '' || b == null ? true : strVal <= String(b)
+        return lower && upper
       }
       const n = Number(val)
-      return n >= Number(a) && n <= Number(b)
+     const lower = a === '' || a == null ? true : n >= Number(a)
+      const upper = b === '' || b == null ? true : n <= Number(b)
+      return lower && upper
     }
     case 'is_null':     return val == null || val === ''
     case 'is_not_null': return val != null && val !== ''

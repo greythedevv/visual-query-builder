@@ -4,12 +4,12 @@ function ruleToSQL(rule: QueryRule): string {
   const { field, operator, value } = rule
   switch (operator) {
     case 'equals': {
-      if (typeof value === 'boolean' || value === 'true' || value === 'false')
+       if (typeof value === 'boolean')
         return `${field} = ${value}`
       return `${field} = '${value}'`
     }
     case 'not_equals': {
-      if (typeof value === 'boolean' || value === 'true' || value === 'false')
+      if (typeof value === 'boolean')
         return `${field} != ${value}`
       return `${field} != '${value}'`
     }
