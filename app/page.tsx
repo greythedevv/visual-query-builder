@@ -1,21 +1,20 @@
 'use client'
 import { useState, useCallback, useRef } from 'react'
-import { useTheme } from 'next-themes'
 import { QueryBuilder }         from '@/app/components/QueryBuilder'
 import { QueryPreview }         from '@/app/components/QueryPreview'
 import { ResultsPanel }         from '@/app/components/ResultsPanel'
 import { QueryHistory }         from '@/app/components/Sidebar/QueryHistory'
 import { SavedPresets }         from '@/app/components/Sidebar/SavedPresets'
+import { ThemeToggle }          from '@/app/components/ThemeToggle'
 import { useQueryBuilder }      from '@/app/hooks/useQueryBuilder'
 import { useKeyboardShortcuts } from '@/app/hooks/useKeyboardShortcuts'
 import { useQueryStore }        from '@/app/store/queryStore'
-import { Sun, Moon, Download, Upload, RotateCcw, History, Bookmark, X, Play, Menu } from 'lucide-react'
+import { Download, Upload, RotateCcw, History, Bookmark, X, Play, Menu } from 'lucide-react'
 
 type SidebarTab = 'history' | 'presets'
 type MobileTab  = 'builder' | 'preview' | 'results'
 
 export default function Home() {
-  const { theme, setTheme }           = useTheme()
   const { schema, reset }             = useQueryStore()
   const [sidebarTab, setSidebarTab]   = useState<SidebarTab>('history')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -53,16 +52,14 @@ export default function Home() {
               <rect x="9"   y="9"   width="5.5" height="5.5" rx="1.5" fill="white" fillOpacity=".25"/>
             </svg>
           </div>
-          {/* Desktop: full name. Mobile: "QF" abbreviation */}
           <span className="hidden sm:block font-semibold text-sm tracking-tight text-[var(--color-ink-1)]">
             QueryForge
           </span>
           <span className="sm:hidden font-semibold text-sm tracking-tight text-[var(--color-ink-1)]">
             QF
           </span>
-          {/* Schema badge — desktop only */}
           {schema && (
-              <span className="hidden sm:inline-flex items-center text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-ring)]">
+            <span className="hidden sm:inline-flex items-center text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent-ring)]">
               {schema.name}
             </span>
           )}
@@ -74,7 +71,6 @@ export default function Home() {
             ctrl+enter to run
           </span>
 
-          {/* Hide reset/export/import on mobile to save space */}
           <NavIconBtn onClick={reset} title="Reset (Ctrl+R)" className="hidden sm:flex">
             <RotateCcw size={14} />
           </NavIconBtn>
@@ -105,11 +101,9 @@ export default function Home() {
             <span className="hidden sm:inline">Run</span>
           </button>
 
-          <NavIconBtn onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Toggle theme">
-            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
-          </NavIconBtn>
+          {/* Isolated client component — handles its own mount state safely */}
+          <ThemeToggle />
 
-          {/* Mobile sidebar toggle — uses Menu icon, not History */}
           <NavIconBtn
             onClick={() => setSidebarOpen(o => !o)}
             title="Open sidebar"
@@ -147,7 +141,6 @@ export default function Home() {
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden relative">
 
-        {/* Mobile overlay */}
         {sidebarOpen && (
           <div className="fixed inset-0 bg-black/60 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
         )}
@@ -163,7 +156,6 @@ export default function Home() {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         ].join(' ')}>
 
-          {/* Sidebar tab switcher */}
           <div className="flex items-center gap-1.5 px-3 py-3 border-b border-[var(--color-border-base)] shrink-0">
             <button
               onClick={() => setSidebarTab('history')}
@@ -189,7 +181,6 @@ export default function Home() {
               <Bookmark size={11} />
               Presets
             </button>
-            {/* Close — mobile only */}
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden p-1.5 rounded-md text-[var(--color-ink-3)] hover:text-[var(--color-ink-1)] hover:bg-[var(--color-surface-3)] transition-colors"
